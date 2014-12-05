@@ -4,6 +4,8 @@ import (
   "os"
   "fmt"
   "flag"
+
+  "github.com/deadsy/stl"
 )
 
 type Params struct {
@@ -14,6 +16,8 @@ type Params struct {
 
 type Run struct {
   Params Params
+  Solid *stl.Solid
+  DoReadInput bool
   Command func(run *Run)
   ExitCode int
 }
@@ -55,7 +59,8 @@ Usage:
 
 List of commands:
 
-  help   : this help
+  help : this help
+  read : read an stl file
 
 List of options:
 `)
@@ -63,15 +68,16 @@ List of options:
 }
 
 func (run *Run) Read() {
-  fmt.Printf("read from %s\n", run.Params.InputFile)
+  fmt.Printf("read command...\n")
 }
 
 func (run *Run) SetCommand() {
   switch run.Params.Command {
-    case "help": run.Command = (*Run).Help
+    case "help": run.Command = (*Run).Help; run.DoReadInput = false
     case "read": run.Command = (*Run).Read
     default:
       run.Command = (*Run).Help
+      run.DoReadInput = false
       os.Stderr.WriteString("error: unknown command\n")
       run.ExitCode = 11
     }
@@ -81,10 +87,32 @@ func (run *Run) ExecCommand() {
   run.Command(run)
 }
 
+func (run *Run) ReadInput() bool {
+  var err error
+  if run.Params.InputFile == "" {
+    run.Solid, err = stl.ReadAll(os.Stdin)
+  } else {
+    run.Solid, err = stl.ReadFile(run.Params.InputFile)
+  }
+  if err != nil {
+    fmt.Fprintln(os.Stderr, err.Error())
+    run.ExitCode = 40
+    return false
+  } else {
+    return true
+  }
+}
+
 func main() {
   var run Run
   run.ParseParams()
+  run.DoReadInput = true
   run.SetCommand()
+  if run.DoReadInput {
+    if !run.ReadInput() {
+      os.Exit(run.ExitCode)
+    }
+  }
   run.ExecCommand()
   os.Exit(run.ExitCode)
 }
