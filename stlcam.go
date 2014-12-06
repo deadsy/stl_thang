@@ -1,10 +1,9 @@
 package main
 
 import (
-  "os"
-  "fmt"
   "flag"
-
+  "fmt"
+  "os"
   "github.com/deadsy/stl"
 )
 
@@ -68,7 +67,7 @@ List of options:
 }
 
 func (run *Run) Read() {
-  fmt.Printf("read command...\n")
+  return
 }
 
 func (run *Run) SetCommand() {
@@ -78,7 +77,7 @@ func (run *Run) SetCommand() {
     default:
       run.Command = (*Run).Help
       run.DoReadInput = false
-      os.Stderr.WriteString("error: unknown command\n")
+      fmt.Fprintf(os.Stderr, "error: unknown command \"%s\"", run.Params.Command)
       run.ExitCode = 11
     }
 }
