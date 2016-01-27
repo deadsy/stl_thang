@@ -9,6 +9,8 @@ import (
 	"io"
 	"regexp"
 	"strconv"
+
+	"github.com/deadsy/stl_thang/vec"
 )
 
 type parser struct {
@@ -142,7 +144,7 @@ func (p *parser) parseFacet(t *Triangle) bool {
 		p.consumeToken(idEndfacet)
 }
 
-func (p *parser) parsePoint(pt *Vec3) bool {
+func (p *parser) parsePoint(pt *vec.V3) bool {
 	return p.parseFloat32(&(pt[0])) &&
 		p.parseFloat32(&(pt[1])) &&
 		p.parseFloat32(&(pt[2]))
