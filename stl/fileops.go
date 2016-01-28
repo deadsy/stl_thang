@@ -76,3 +76,27 @@ func ReadFile(filename string) (solid *Solid, err error) {
 	defer file.Close()
 	return ReadAll(bufio.NewReader(file))
 }
+
+func (solid *Solid) WriteAll(w io.Writer) error {
+	if solid.IsAscii {
+		return writeSolidAscii(w, solid)
+	} else {
+		return writeSolidBinary(w, solid)
+	}
+}
+
+func (solid *Solid) WriteFile(filename string) error {
+	file, createErr := os.Create(filename)
+	if createErr != nil {
+		return createErr
+	}
+	defer file.Close()
+
+	bufWriter := bufio.NewWriter(file)
+	err := solid.WriteAll(bufWriter)
+	if err != nil {
+		return err
+	} else {
+		return bufWriter.Flush()
+	}
+}
